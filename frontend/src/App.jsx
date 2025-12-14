@@ -1,8 +1,16 @@
 import React from 'react'
-
+import { Routes, Route } from 'react-router-dom'
+import SignUp from "./pages/SignUp.jsx";
+import SignIn from "./pages/SignIn.jsx";
+export const ServerUrl = "http://localhost:8000"
 const App = () => {
   return (
-    <div className='text-red-500'>App</div>
+    <>
+      <Routes>
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/signin" element={<SignIn />} />
+    </Routes>
+    </>
   )
 }
 
