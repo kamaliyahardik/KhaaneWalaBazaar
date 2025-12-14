@@ -21,9 +21,7 @@ const SignIn = () => {
         password,
       };
       if (
-        !payload.fullName ||
         !payload.email ||
-        !payload.mobile ||
         !payload.password
       ) {
         console.log("Signup error:", "All fields are required");
@@ -37,7 +35,7 @@ const SignIn = () => {
         return;
       }
       console.log("Signup payload:", payload);
-      const result = await axios.post(`${ServerUrl}/api/auth/signup`, payload, {
+      const result = await axios.post(`${ServerUrl}/api/auth/signin`, payload, {
         withCredentials: true,
       });
       console.log("Signup success:", result.data);
@@ -110,6 +108,11 @@ const SignIn = () => {
                 {!showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
               </button>
             </div>
+
+            <div className="text-right mt-2 text-[var(--PrimaryColor)] font-bold cursor-pointer hover:underline" onClick={() => navigate("/forgot-password")}>
+              Forgot Password?
+            </div>
+
           </div>
 
           {/* Sign Up Button */}
@@ -132,7 +135,7 @@ const SignIn = () => {
               <span
                 onClick={() => navigate("/signup")}
                 href="/signup"
-                className="text-[var(--PrimaryColor)] font-semibold cursor-pointer"
+                className="text-[var(--PrimaryColor)] font-semibold cursor-pointer hover:underline"
               >
                 Sign Up
               </span>
