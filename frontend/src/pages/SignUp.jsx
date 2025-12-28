@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ServerUrl } from "../App.jsx";
 import "../../src/index.css";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../../firebase.js";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,9 +18,33 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+
+  const getErrorMessage = (error) => {
+    if (typeof error === "string") return error;
+
+    const firebaseCode = error?.code;
+    if (firebaseCode === "auth/popup-closed-by-user") {
+      return "Popup closed. Please try again.";
+    }
+    if (firebaseCode === "auth/cancelled-popup-request") {
+      return "Popup cancelled. Please try again.";
+    }
+    if (firebaseCode === "auth/configuration-not-found") {
+      return "Firebase configuration not found. Please check your Firebase config.";
+    }
+
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      "Something went wrong. Please try again."
+    );
+  };
 
   const handleSignUp = async () => {
     try {
+      setErr("");
       const payload = {
         fullName: fullname.trim(),
         email: email.trim(),
@@ -32,27 +58,34 @@ const SignUp = () => {
         !payload.mobile ||
         !payload.password
       ) {
-        console.log("Signup error:", "All fields are required");
+        setErr("All fields are required.");
         return;
       }
       if (payload.password.length < 6) {
-        console.log(
-          "Signup error:",
-          "Password must be at least 6 characters long."
-        );
+        setErr("Password must be at least 6 characters long.");
         return;
       }
       if (payload.mobile.length < 10) {
-        console.log("Signup error:", "Mobile number must be 10 digits long.");
+        setErr("Mobile number must be at least 10 digits long.");
         return;
       }
-      console.log("Signup payload:", payload);
-      const result = await axios.post(`${ServerUrl}/api/auth/signup`, payload, {
+      await axios.post(`${ServerUrl}/api/auth/signup`, payload, {
         withCredentials: true,
       });
-      console.log("Signup success:", result.data);
+      setErr("");
     } catch (error) {
-      console.log("Signup error:", error.response?.data || error.message);
+      setErr(getErrorMessage(error));
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    try {
+      setErr("");
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      setErr("");
+    } catch (error) {
+      setErr(getErrorMessage(error));
     }
   };
   return (
@@ -89,9 +122,10 @@ const SignUp = () => {
               className="
                 w-full border border-gray-300 rounded-lg px-3 py-2 
                 focus:outline-none 
-                focus:border-[var(--PrimaryColor)]"
+                `focus:border-[var(--PrimaryColor)]`"
               onChange={(e) => setFullname(e.target.value)}
               value={fullname}
+              required
             />
           </div>
 
@@ -108,9 +142,10 @@ const SignUp = () => {
               className="
                 w-full border border-gray-300 rounded-lg px-3 py-2 
                 focus:outline-none 
-                focus:border-[var(--PrimaryColor)]"
+                `focus:border-[var(--PrimaryColor)]`"
               onChange={(e) => setEmail(e.target.value)}
               value={email}
+              required
             />
           </div>
 
@@ -127,9 +162,10 @@ const SignUp = () => {
               className="
                 w-full border border-gray-300 rounded-lg px-3 py-2 
                 focus:outline-none 
-                focus:border-[var(--PrimaryColor)]"
+                `focus:border-[var(--PrimaryColor)]`"
               onChange={(e) => setMobile(e.target.value)}
               value={mobile}
+              required
             />
           </div>
 
@@ -150,6 +186,7 @@ const SignUp = () => {
                 focus:border-[var(--PrimaryColor)]"
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
+                required
               />
               <button
                 className="absolute right-3 top-[14px] text-gray-500 cursor-pointer"
@@ -200,12 +237,23 @@ const SignUp = () => {
               Sign Up
             </button>
 
-            <button className="w-full mt-4 border border-[var(--BorderColor)] rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-gray-100 flex items-center justify-center gap-2">
+            <button
+              className="w-full mt-4 border border-[var(--BorderColor)] rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-gray-100 flex items-center justify-center gap-2"
+              onClick={handleGoogleAuth}
+            >
               <FcGoogle size={20} />
               Sign Up with Google
             </button>
 
             <div className="text-center mt-4"></div>
+            {err ? (
+              <p
+                className="mt-3 text-sm"
+                style={{ color: "var(--PrimaryColor)" }}
+              >
+                {err}
+              </p>
+            ) : null}
             <p className="text-gray-600">
               Already have an account?{" "}
               <span

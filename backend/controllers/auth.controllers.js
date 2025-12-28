@@ -195,4 +195,4 @@ export const resetPassword = async (req, res) => {
       error: error.message,
     });
   }
-};
+};      

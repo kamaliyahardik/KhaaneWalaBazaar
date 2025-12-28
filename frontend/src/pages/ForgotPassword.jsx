@@ -10,51 +10,76 @@ const ForgotPassword = () => {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [err, setErr] = useState("");
   const navigate = useNavigate();
+
+  const getErrorMessage = (error) => {
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      "Something went wrong. Please try again."
+    );
+  };
 
   const handleSendOtp = async () => {
     try {
-      const result = await axios.post(
+      setErr("");
+      if (!email.trim()) {
+        setErr("Email is required.");
+        return;
+      }
+
+      await axios.post(
         `${ServerUrl}/api/auth/send-otp`,
-        { email: email.trim() },
+        { email },
         { withCredentials: true }
       );
-      console.log("Send OTP success:", result.data);
       setStep(2);
     } catch (error) {
-      console.log("Send OTP error:", error.response?.data || error.message);
+      setErr(getErrorMessage(error));
     }
   };
 
   const handleVerifyOtp = async () => {
     try {
-      const result = await axios.post(
+      setErr("");
+      if (!otp.trim()) {
+        setErr("OTP is required.");
+        return;
+      }
+
+      await axios.post(
         `${ServerUrl}/api/auth/verify-otp`,
         { email, otp },
         { withCredentials: true }
       );
-      console.log(result);
       setStep(3);
     } catch (error) {
-      console.log(error);
+      setErr(getErrorMessage(error));
     }
   };
 
   const handleResetPassword = async () => {
     if (newPassword !== confirmPassword) {
-      return null;
+      setErr("Passwords do not match.");
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setErr("Password must be at least 6 characters long.");
+      return;
     }
 
     try {
-      const result = await axios.post(
+      setErr("");
+      await axios.post(
         `${ServerUrl}/api/auth/reset-password`,
         { email, newPassword },
         { withCredentials: true }
       );
-      console.log(result);
       navigate("/signin");
     } catch (error) {
-      console.log(error);
+      setErr(getErrorMessage(error));
     }
   };
 
@@ -73,6 +98,11 @@ const ForgotPassword = () => {
               Forgot Password
             </h2>
           </div>
+          {err ? (
+            <p className="mb-4 text-sm" style={{ color: "var(--PrimaryColor)" }}>
+              {err}
+            </p>
+          ) : null}
 
           {step == 1 && (
             <div>
@@ -89,9 +119,10 @@ const ForgotPassword = () => {
                   className="
                 w-full border border-gray-300 rounded-lg px-3 py-2 
                 focus:outline-none 
-                focus:border-[var(--PrimaryColor)]"
+                `focus:border-[var(--PrimaryColor)]`"
                   onChange={(e) => setEmail(e.target.value)}
                   value={email}
+                  required
                 />
               </div>
               <button
@@ -121,6 +152,7 @@ const ForgotPassword = () => {
                 focus:border-[var(--PrimaryColor)]"
                   onChange={(e) => setOtp(e.target.value)}
                   value={otp}
+                  required
                 />
               </div>
               <button
@@ -150,6 +182,7 @@ const ForgotPassword = () => {
                 focus:border-[var(--PrimaryColor)]"
                   onChange={(e) => setNewPassword(e.target.value)}
                   value={newPassword}
+                  required
                 />
 
                 <label
@@ -169,6 +202,7 @@ const ForgotPassword = () => {
                 focus:border-[var(--PrimaryColor)]"
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   value={confirmPassword}
+                  required
                 />
               </div>
 

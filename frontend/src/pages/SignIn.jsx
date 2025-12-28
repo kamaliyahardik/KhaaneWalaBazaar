@@ -13,9 +13,20 @@ const SignIn = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+
+  const getErrorMessage = (error) => {
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      "Something went wrong. Please try again."
+    );
+  };
 
   const handleSignIn = async () => {
     try {
+      setErr("");
       const payload = {
         email: email.trim(),
         password,
@@ -24,23 +35,19 @@ const SignIn = () => {
         !payload.email ||
         !payload.password
       ) {
-        console.log("Signup error:", "All fields are required");
+        setErr("All fields are required.");
         return;
       }
       if (payload.password.length < 6) {
-        console.log(
-          "Signup error:",
-          "Password must be at least 6 characters long."
-        );
+        setErr("Password must be at least 6 characters long.");
         return;
       }
-      console.log("Signup payload:", payload);
-      const result = await axios.post(`${ServerUrl}/api/auth/signin`, payload, {
+      await axios.post(`${ServerUrl}/api/auth/signin`, payload, {
         withCredentials: true,
       });
-      console.log("Signup success:", result.data);
+      setErr("");
     } catch (error) {
-      console.log("Signup error:", error.response?.data || error.message);
+      setErr(getErrorMessage(error));
     }
   };
   return (
@@ -121,7 +128,7 @@ const SignIn = () => {
               onClick={handleSignIn}
               className="w-full bg-[var(--PrimaryColor)] text-white rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-[var(--HoverColor)]"
             >
-              Sign Up
+              Sign In
             </button>
 
             <button className="w-full mt-4 border border-[var(--BorderColor)] rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-gray-100 flex items-center justify-center gap-2">
@@ -130,6 +137,11 @@ const SignIn = () => {
             </button>
 
             <div className="text-center mt-4"></div>
+            {err ? (
+              <p className="mt-3 text-sm" style={{ color: "var(--PrimaryColor)" }}>
+                {err}
+              </p>
+            ) : null}
             <p className="text-gray-600">
               Want to create new account?{" "}
               <span
