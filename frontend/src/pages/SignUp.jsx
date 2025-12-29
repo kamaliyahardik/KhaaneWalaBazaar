@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -20,7 +20,8 @@ const SignUp = () => {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
-  const [loading,setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const getErrorMessage = (error) => {
     if (typeof error === "string") return error;
@@ -44,10 +45,16 @@ const SignUp = () => {
     );
   };
 
+  useEffect(() => {
+    if (!success) return;
+    const t = setTimeout(() => setSuccess(""), 2500);
+    return () => clearTimeout(t);
+  }, [success]);
+
   const handleSignUp = async () => {
-    setLoading(true)
+    setErr("");
+    setSuccess("");
     try {
-      setErr("");
       const payload = {
         fullName: fullname.trim(),
         email: email.trim(),
@@ -72,25 +79,36 @@ const SignUp = () => {
         setErr("Mobile number must be at least 10 digits long.");
         return;
       }
-      await axios.post(`${ServerUrl}/api/auth/signup`, payload, {
-        withCredentials: true,
-      });
+      setLoading(true);
+      const { data } = await axios.post(
+        `${ServerUrl}/api/auth/signup`,
+        payload,
+        {
+          withCredentials: true,
+        }
+      );
       setErr("");
-      setLoading(false);
+      setSuccess(data?.message || "Sign up successfully");
     } catch (error) {
       setErr(getErrorMessage(error));
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleAuth = async () => {
+    setErr("");
+    setSuccess("");
+    setLoading(true);
     try {
-      setErr("");
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       setErr("");
+      setSuccess("Sign up successfully");
     } catch (error) {
       setErr(getErrorMessage(error));
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -238,8 +256,9 @@ const SignUp = () => {
             <button
               onClick={handleSignUp}
               className="w-full bg-[var(--PrimaryColor)] text-white rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-[var(--HoverColor)]"
-            disabled={loading} >
-            {loading? <ClipLoader size={20} />: "Sign up"}
+              disabled={loading}
+            >
+              {loading ? <ClipLoader size={20} /> : "Sign up"}
             </button>
 
             <button
@@ -257,6 +276,14 @@ const SignUp = () => {
                 style={{ color: "var(--PrimaryColor)" }}
               >
                 {err}
+              </p>
+            ) : null}
+            {success ? (
+              <p
+                className="mt-3 text-sm"
+                style={{ color: "var(--PrimaryColor)" }}
+              >
+                {success}
               </p>
             ) : null}
             <p className="text-gray-600">

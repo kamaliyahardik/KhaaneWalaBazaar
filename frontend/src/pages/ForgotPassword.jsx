@@ -10,86 +10,51 @@ const ForgotPassword = () => {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [err, setErr] = useState("");
-  const [loading,setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const getErrorMessage = (error) => {
-    return (
-      error?.response?.data?.message ||
-      error?.response?.data?.error ||
-      error?.message ||
-      "Something went wrong. Please try again."
-    );
-  };
-
   const handleSendOtp = async () => {
-    setLoading(true);
     try {
-      setErr("");
-      if (!email.trim()) {
-        setErr("Email is required.");
-        return;
-      }
-
-      await axios.post(
+      const result = await axios.post(
         `${ServerUrl}/api/auth/send-otp`,
         { email },
         { withCredentials: true }
       );
+      console.log(result);
       setStep(2);
-      setLoading(false)
     } catch (error) {
-      setErr(getErrorMessage(error));
-      setLoading(false)
+      console.log(error);
     }
   };
 
   const handleVerifyOtp = async () => {
-      setLoading(true)
     try {
-      setErr("");
-      if (!otp.trim()) {
-        setErr("OTP is required.");
-        return;
-      }
-
-      await axios.post(
+      const result = await axios.post(
         `${ServerUrl}/api/auth/verify-otp`,
         { email, otp },
         { withCredentials: true }
       );
+      console.log(result);
       setStep(3);
-      setLoading(false)
     } catch (error) {
-      setErr(getErrorMessage(error));
-      setLoading(false)
-
+      console.log(error);
     }
   };
 
   const handleResetPassword = async () => {
     if (newPassword !== confirmPassword) {
-      setErr("Passwords do not match.");
-      return;
+      return null;
     }
-    if (!newPassword || newPassword.length < 6) {
-      setErr("Password must be at least 6 characters long.");
-      return;
-    }
-    setLoading(true)
+
     try {
-      setErr("");
-      await axios.post(
+      const result = await axios.post(
         `${ServerUrl}/api/auth/reset-password`,
         { email, newPassword },
         { withCredentials: true }
       );
-      setLoading(false)
+      console.log(result);
       navigate("/signin");
     } catch (error) {
-      setErr(getErrorMessage(error));
-      setLoading(false)
+      console.log(error);
     }
   };
 
@@ -108,11 +73,6 @@ const ForgotPassword = () => {
               Forgot Password
             </h2>
           </div>
-          {err ? (
-            <p className="mb-4 text-sm" style={{ color: "var(--PrimaryColor)" }}>
-              {err}
-            </p>
-          ) : null}
 
           {step == 1 && (
             <div>
@@ -129,10 +89,9 @@ const ForgotPassword = () => {
                   className="
                 w-full border border-gray-300 rounded-lg px-3 py-2 
                 focus:outline-none 
-                `focus:border-[var(--PrimaryColor)]`"
+                focus:border-[var(--PrimaryColor)]"
                   onChange={(e) => setEmail(e.target.value)}
                   value={email}
-                  required
                 />
               </div>
               <button
@@ -162,7 +121,6 @@ const ForgotPassword = () => {
                 focus:border-[var(--PrimaryColor)]"
                   onChange={(e) => setOtp(e.target.value)}
                   value={otp}
-                  required
                 />
               </div>
               <button
@@ -192,7 +150,6 @@ const ForgotPassword = () => {
                 focus:border-[var(--PrimaryColor)]"
                   onChange={(e) => setNewPassword(e.target.value)}
                   value={newPassword}
-                  required
                 />
 
                 <label
@@ -212,7 +169,6 @@ const ForgotPassword = () => {
                 focus:border-[var(--PrimaryColor)]"
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   value={confirmPassword}
-                  required
                 />
               </div>
 

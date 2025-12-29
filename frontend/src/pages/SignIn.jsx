@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
@@ -15,7 +15,8 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
-  const [loading,setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const getErrorMessage = (error) => {
     return (
@@ -26,18 +27,21 @@ const SignIn = () => {
     );
   };
 
+  useEffect(() => {
+    if (!success) return;
+    const t = setTimeout(() => setSuccess(""), 2500);
+    return () => clearTimeout(t);
+  }, [success]);
+
   const handleSignIn = async () => {
-    setLoading(true)
+    setErr("");
+    setSuccess("");
     try {
-      setErr("");
       const payload = {
         email: email.trim(),
         password,
       };
-      if (
-        !payload.email ||
-        !payload.password
-      ) {
+      if (!payload.email || !payload.password) {
         setErr("All fields are required.");
         return;
       }
@@ -45,14 +49,16 @@ const SignIn = () => {
         setErr("Password must be at least 6 characters long.");
         return;
       }
-      await axios.post(`${ServerUrl}/api/auth/signin`, payload, {
+      setLoading(true);
+      const res = await axios.post(`${ServerUrl}/api/auth/signin`, payload, {
         withCredentials: true,
       });
       setErr("");
-      setLoading(false)
+      setSuccess(res?.data?.message || "Sign in successfully.");
     } catch (error) {
       setErr(getErrorMessage(error));
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -121,10 +127,12 @@ const SignIn = () => {
               </button>
             </div>
 
-            <div className="text-right mt-2 text-[var(--PrimaryColor)] font-bold cursor-pointer hover:underline" onClick={() => navigate("/forgot-password")}>
+            <div
+              className="text-right mt-2 text-[var(--PrimaryColor)] font-bold cursor-pointer hover:underline"
+              onClick={() => navigate("/forgot-password")}
+            >
               Forgot Password?
             </div>
-
           </div>
 
           {/* Sign Up Button */}
@@ -132,8 +140,9 @@ const SignIn = () => {
             <button
               onClick={handleSignIn}
               className="w-full bg-[var(--PrimaryColor)] text-white rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-[var(--HoverColor)]"
-            disabled={loading} >
-            {loading? <ClipLoader size={20} />: "Sign In"}
+              disabled={loading}
+            >
+              {loading ? <ClipLoader size={20} /> : "Sign In"}
             </button>
 
             <button className="w-full mt-4 border border-[var(--BorderColor)] rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-gray-100 flex items-center justify-center gap-2">
@@ -143,8 +152,19 @@ const SignIn = () => {
 
             <div className="text-center mt-4"></div>
             {err ? (
-              <p className="mt-3 text-sm" style={{ color: "var(--PrimaryColor)" }}>
+              <p
+                className="mt-3 text-sm"
+                style={{ color: "var(--PrimaryColor)" }}
+              >
                 {err}
+              </p>
+            ) : null}
+            {success ? (
+              <p
+                className="mt-3 text-sm"
+                style={{ color: "var(--PrimaryColor)" }}
+              >
+                {success}
               </p>
             ) : null}
             <p className="text-gray-600">
