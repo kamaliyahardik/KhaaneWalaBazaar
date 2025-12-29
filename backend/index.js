@@ -1,40 +1,36 @@
-import express from 'express';
-import dotenv from 'dotenv';
-dotenv.config();
-import connectDb from './config/db.js';
-import cookieParser from 'cookie-parser';
-import authRouter from './routes/auth.routes.js';
-import cors from 'cors';
-import mongoose from 'mongoose';
-const app = express();
-const PORT = process.env.PORT || 5000;
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import connectDb from "./config/db.js";
+import authRouter from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
 
-app.use(cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-  credentials: true
-}));
+
+
+// load env variables
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 5000;
+
+// middlewares
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(cookieParser());
-app.use((req, res, next) => {
-  if (req.path.startsWith('/api/') && mongoose.connection.readyState !== 1) {
-    return res.status(503).json({ message: "Database not connected." });
-  }
-  next();
+
+// routes
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
+
+// server start
+app.listen(port, () => {
+  connectDb();
+  console.log(`Server started at ${port}`);
 });
-app.use("/api/auth",authRouter)
-
-
-const startServer = async () => {
-  try {
-    await connectDb();
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server.');
-    process.exit(1);
-  }
-};
-
-startServer();

@@ -23,3 +23,6 @@ const isAuth = (req, res, next) => {
     })
   }
 };
+
+
+export default isAuth;
