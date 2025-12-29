@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ServerUrl } from "../App.jsx";
 import "../../src/index.css";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +15,7 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
+  const [loading,setLoading] = useState(false);
 
   const getErrorMessage = (error) => {
     return (
@@ -25,6 +27,7 @@ const SignIn = () => {
   };
 
   const handleSignIn = async () => {
+    setLoading(true)
     try {
       setErr("");
       const payload = {
@@ -46,8 +49,10 @@ const SignIn = () => {
         withCredentials: true,
       });
       setErr("");
+      setLoading(false)
     } catch (error) {
       setErr(getErrorMessage(error));
+      setLoading(false)
     }
   };
   return (
@@ -127,8 +132,8 @@ const SignIn = () => {
             <button
               onClick={handleSignIn}
               className="w-full bg-[var(--PrimaryColor)] text-white rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-[var(--HoverColor)]"
-            >
-              Sign In
+            disabled={loading} >
+            {loading? <ClipLoader size={20} />: "Sign In"}
             </button>
 
             <button className="w-full mt-4 border border-[var(--BorderColor)] rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-gray-100 flex items-center justify-center gap-2">

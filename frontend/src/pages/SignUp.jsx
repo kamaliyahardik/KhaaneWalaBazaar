@@ -9,6 +9,7 @@ import { ServerUrl } from "../App.jsx";
 import "../../src/index.css";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebase.js";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +20,7 @@ const SignUp = () => {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
+  const [loading,setLoading] = useState(false);
 
   const getErrorMessage = (error) => {
     if (typeof error === "string") return error;
@@ -43,6 +45,7 @@ const SignUp = () => {
   };
 
   const handleSignUp = async () => {
+    setLoading(true)
     try {
       setErr("");
       const payload = {
@@ -73,8 +76,10 @@ const SignUp = () => {
         withCredentials: true,
       });
       setErr("");
+      setLoading(false);
     } catch (error) {
       setErr(getErrorMessage(error));
+      setLoading(false)
     }
   };
 
@@ -233,8 +238,8 @@ const SignUp = () => {
             <button
               onClick={handleSignUp}
               className="w-full bg-[var(--PrimaryColor)] text-white rounded-lg px-4 py-2 font-semibold transition cursor-pointer hover:bg-[var(--HoverColor)]"
-            >
-              Sign Up
+            disabled={loading} >
+            {loading? <ClipLoader size={20} />: "Sign up"}
             </button>
 
             <button

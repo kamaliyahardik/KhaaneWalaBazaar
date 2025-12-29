@@ -11,6 +11,7 @@ const ForgotPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [err, setErr] = useState("");
+  const [loading,setLoading] = useState(false);
   const navigate = useNavigate();
 
   const getErrorMessage = (error) => {
@@ -23,6 +24,7 @@ const ForgotPassword = () => {
   };
 
   const handleSendOtp = async () => {
+    setLoading(true);
     try {
       setErr("");
       if (!email.trim()) {
@@ -36,12 +38,15 @@ const ForgotPassword = () => {
         { withCredentials: true }
       );
       setStep(2);
+      setLoading(false)
     } catch (error) {
       setErr(getErrorMessage(error));
+      setLoading(false)
     }
   };
 
   const handleVerifyOtp = async () => {
+      setLoading(true)
     try {
       setErr("");
       if (!otp.trim()) {
@@ -55,8 +60,11 @@ const ForgotPassword = () => {
         { withCredentials: true }
       );
       setStep(3);
+      setLoading(false)
     } catch (error) {
       setErr(getErrorMessage(error));
+      setLoading(false)
+
     }
   };
 
@@ -69,7 +77,7 @@ const ForgotPassword = () => {
       setErr("Password must be at least 6 characters long.");
       return;
     }
-
+    setLoading(true)
     try {
       setErr("");
       await axios.post(
@@ -77,9 +85,11 @@ const ForgotPassword = () => {
         { email, newPassword },
         { withCredentials: true }
       );
+      setLoading(false)
       navigate("/signin");
     } catch (error) {
       setErr(getErrorMessage(error));
+      setLoading(false)
     }
   };
 
